@@ -77,3 +77,5 @@ I did not use the imported constant MAX_IN_PERIOD in my tests. The reason being,
 ### Part 2
 
 The error checks are pretty similar to part 1 except for the addition of auto-off. Rather than creating a new function to check the profile, the current function is refactored.
+
+### Part 3

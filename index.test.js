@@ -215,6 +215,97 @@ describe('calculateEnergyUsageSimple', () => {
 // Part 2
 
 describe('calculateEnergySavings', () => {
+  it('should throw an error if both the initial state and events are missing from the profile', () => {
+    const emptyUsageProfile = {};
+    expect(() => calculateEnergySavings(emptyUsageProfile)).toThrow(
+      /profile is missing initial state and events/
+    );
+  });
+  it('should throw an error if the initial state is missing from the profile', () => {
+    const usageProfileNoInitial = {
+      events: [
+        { timestamp: 126, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergySavings(usageProfileNoInitial)).toThrow(
+      /profile is missing initial state/
+    );
+  });
+
+  it('should throw an error if events is missing from the profile', () => {
+    const usageProfileNoEvents = {
+      initial: 'on',
+    };
+    expect(() => calculateEnergySavings(usageProfileNoEvents)).toThrow(
+      /profile is missing events/
+    );
+  });
+
+  it('should throw an error if the initial state is neither "on", "off" nor "auto-off', () => {
+    const usageProfileInitialInvalid = {
+      initial: 'invalid',
+      events: [
+        { timestamp: 126, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergySavings(usageProfileInitialInvalid)).toThrow(
+      /initial state should be one of on, off or auto-off/
+    );
+  });
+
+  it(`should throw an error if one of the events' state is neither "on", "off", nor "auto-off"`, () => {
+    const usageProfileEventInvalid = {
+      initial: 'off',
+      events: [
+        { timestamp: 126, state: 'invalid' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergySavings(usageProfileEventInvalid)).toThrow(
+      /event state should be one of on, off or auto-off/
+    );
+  });
+
+  it("should throw an error if one of the events' timestamp is not an integer", () => {
+    const usageProfileEventNotAnInteger = {
+      initial: 'off',
+      events: [
+        { timestamp: '126', state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergySavings(usageProfileEventNotAnInteger)).toThrow(
+      /event timestamp is not an integer/
+    );
+  });
+
+  it("should throw an error if one of the events' timestamp is less than 0", () => {
+    const usageProfileEventLessThanZero = {
+      initial: 'off',
+      events: [
+        { timestamp: -1, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergySavings(usageProfileEventLessThanZero)).toThrow(
+      /event timestamp cannot be less than 0/
+    );
+  });
+
+  it("should throw an error if one of the events' timestamp is bigger than 1439", () => {
+    const usageProfileEventExceedsMaxValue = {
+      initial: 'off',
+      events: [
+        { timestamp: 1440, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() =>
+      calculateEnergySavings(usageProfileEventExceedsMaxValue)
+    ).toThrow(/event timestamp exceed the maximum timestamp 1439/);
+  });
   it('should return zero for always on', () => {
     const usageProfile = {
       initial: 'on',
@@ -287,6 +378,19 @@ describe('calculateEnergySavings', () => {
         { state: 'on', timestamp: 299 },
         { state: 'auto-off', timestamp: 320 },
         { state: 'off', timestamp: 500 },
+      ],
+    };
+    expect(calculateEnergySavings(usageProfile)).toEqual(MAX_IN_PERIOD - 320);
+  });
+
+  it('should calculate energy savings correctly on silly data where the events are not ordered by timestamp', () => {
+    const usageProfile = {
+      initial: 'off',
+      events: [
+        { state: 'off', timestamp: 500 },
+        { state: 'on', timestamp: 299 },
+        { state: 'auto-off', timestamp: 320 },
+        { state: 'on', timestamp: 250 },
       ],
     };
     expect(calculateEnergySavings(usageProfile)).toEqual(MAX_IN_PERIOD - 320);

@@ -39,6 +39,7 @@ const MIN_IN_PERIOD = 0;
 
 const ON_STATE = 'on';
 const OFF_STATE = 'off';
+const AUTO_OFF_STATE = 'auto-off';
 
 const BASE_ON_OFF_ERROR = 'state is neither on nor off';
 const BASE_ON_OFF_AUTO_ERROR = 'state should be one of on, off or auto-off';
@@ -96,7 +97,7 @@ const checkProfile = (profile, { validStates, errorMessage }) => {
 const calculateEnergyUsageSimple = (profile) => {
   checkProfile(profile, {
     validStates: [ON_STATE, OFF_STATE],
-    errorMessage: BASE_ON_OFF_ERROR
+    errorMessage: BASE_ON_OFF_ERROR,
   });
 
   const { initial, events } = profile;
@@ -158,7 +159,36 @@ const calculateEnergyUsageSimple = (profile) => {
  */
 
 const calculateEnergySavings = (profile) => {
+  checkProfile(profile, {
+    validStates: [ON_STATE, OFF_STATE, AUTO_OFF_STATE],
+    errorMessage: BASE_ON_OFF_AUTO_ERROR,
+  });
 
+  const { initial, events } = profile;
+
+  events.sort((a, b) => a.timestamp - b.timestamp);
+
+  let currentEvent = { timestamp: MIN_IN_PERIOD, state: initial };
+  let totalTimeSaved = MIN_IN_PERIOD;
+
+  for (let i = 0; i < events.length; i++) {
+    if (
+      currentEvent.state === events[i].state ||
+      (currentEvent.state === AUTO_OFF_STATE &&
+        events[i].state === OFF_STATE) ||
+      (currentEvent.state === OFF_STATE && events[i].state === AUTO_OFF_STATE)
+    ) {
+      continue;
+    }
+    if (currentEvent.state === AUTO_OFF_STATE) {
+      totalTimeSaved += events[i].timestamp - currentEvent.timestamp;
+    }
+    currentEvent = events[i];
+  }
+  if (currentEvent.state === AUTO_OFF_STATE) {
+    totalTimeSaved += MAX_IN_PERIOD - currentEvent.timestamp;
+  }
+  return totalTimeSaved;
 };
 
 /**
@@ -189,7 +219,7 @@ const calculateEnergySavings = (profile) => {
 
 const isInteger = (number) => Number.isInteger(number);
 
-const calculateEnergyUsageForDay = (monthUsageProfile, day) => { };
+const calculateEnergyUsageForDay = (monthUsageProfile, day) => {};
 
 module.exports = {
   calculateEnergyUsageSimple,
