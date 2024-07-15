@@ -36,11 +36,40 @@ const MAX_IN_PERIOD = 1440;
  * ```
  */
 
+const ON_STATE = 'on';
+const OFF_STATE = 'off';
+
 const PROFILE_ERRORS = {
   MISSING_INITIAL_STATE_AND_EVENTS:
     'profile is missing initial state and events',
   MISSING_INITIAL_STATE: 'profile is missing initial state',
   MISSING_EVENTS: 'profile is missing events',
+};
+
+const INITIAL_STATE_ON_OFF_ERROR = 'initial state is neither on nor off';
+
+const EVENTS_ERRORS = {
+  STATE_ON_OFF_ERROR: 'event state is neither on nor off',
+  NOT_AN_INTEGER_TIMESTAMP: 'event timestamp is not an integer',
+  NEGATIVE_TIMESTAMP: 'event timestamp cannot be less than 0',
+  EXCEEDING_TIMESTAMP: 'event timestamp exceed the maximum timestamp 1439',
+};
+
+const checkEvents = (events) => {
+  for (let i = 0; i < events.length; i++) {
+    if (![ON_STATE, OFF_STATE].includes(events[i].state)) {
+      throw new Error(EVENTS_ERRORS.STATE_ON_OFF_ERROR);
+    }
+    if (!isInteger(events[i].timestamp)) {
+      throw new Error(EVENTS_ERRORS.NOT_AN_INTEGER_TIMESTAMP);
+    }
+    if (events[i].timestamp < 0) {
+      throw new Error(EVENTS_ERRORS.NEGATIVE_TIMESTAMP);
+    }
+    if (events[i].timestamp >= MAX_IN_PERIOD) {
+      throw new Error(EVENTS_ERRORS.EXCEEDING_TIMESTAMP);
+    }
+  }
 };
 
 const checkProfile = (profile) => {
@@ -57,6 +86,10 @@ const checkProfile = (profile) => {
   if (!events) {
     throw new Error(PROFILE_ERRORS.MISSING_EVENTS);
   }
+  if (![ON_STATE, OFF_STATE].includes(initial)) {
+    throw new Error(INITIAL_STATE_ON_OFF_ERROR);
+  }
+  checkEvents(events);
 };
 
 const calculateEnergyUsageSimple = (profile) => {

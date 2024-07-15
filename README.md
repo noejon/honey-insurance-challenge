@@ -49,9 +49,9 @@ npm run test:watch
 
 ### Part 1
 
-#### Train of thoughts
+#### Decisions
 
-##### Step 1
+##### Checks on the profile object
 
 As we are using Vanilla JS, the profile object might be missing the `initial` or `events` properties. If initial is missing, an error should be thrown. We can't assume what the `initial` value was according to the first event, as there is a possibility to have consecutive duplicate "on" or "off" states.
 
@@ -63,3 +63,11 @@ Missing `events` could be handled two ways:
 I decided to choose the latter. The appliance might have been turned on and off during the day but a sneaky bug was introduced in the appliance, and events are no longer sent. It is then better to handle the error and log it (along with a possible appliance ID, model or any relevant information).
 
 After implementing the previous checks I realised that it might be a good thing to check for the absence of both of them. If both are missing we potentially have two bugs on our hands, and just one of them logged.
+
+More potential edge cases to check:
+
+- If the initial state is neither on or off
+- An event state is neither on or off
+- Timestamp is not an integer
+- Timestamp is negative
+- Timestamp is more than 1439

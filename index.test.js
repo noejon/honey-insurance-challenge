@@ -33,6 +33,72 @@ describe('calculateEnergyUsageSimple', () => {
       /profile is missing events/
     );
   });
+
+  it('should throw an error if the initial state is neither "on" nor "off"', () => {
+    const usageProfileNotOnOffInitial = {
+      initial: 'neitherOnNorOff',
+      events: [
+        { timestamp: 126, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() =>
+      calculateEnergyUsageSimple(usageProfileNotOnOffInitial)
+    ).toThrow(/initial state is neither on nor off/);
+  });
+
+  it(`should throw an error if one of the events' state is neither "on" nor "off"`, () => {
+    const usageProfileEventNotOnOff = {
+      initial: 'off',
+      events: [
+        { timestamp: 126, state: 'neitherOnNorOff' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergyUsageSimple(usageProfileEventNotOnOff)).toThrow(
+      /event state is neither on nor off/
+    );
+  });
+
+  it("should throw an error if one of the events' timestamp is not an integer", () => {
+    const usageProfileEventNotAnInteger = {
+      initial: 'off',
+      events: [
+        { timestamp: '126', state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() =>
+      calculateEnergyUsageSimple(usageProfileEventNotAnInteger)
+    ).toThrow(/event timestamp is not an integer/);
+  });
+
+  it("should throw an error if one of the events' timestamp is less than 0", () => {
+    const usageProfileEventLessThanZero = {
+      initial: 'off',
+      events: [
+        { timestamp: -1, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() =>
+      calculateEnergyUsageSimple(usageProfileEventLessThanZero)
+    ).toThrow(/event timestamp cannot be less than 0/);
+  });
+
+  it("should throw an error if one of the events' timestamp is bigger than 1439", () => {
+    const usageProfileEventExceedsMaxValue = {
+      initial: 'off',
+      events: [
+        { timestamp: 1440, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() =>
+      calculateEnergyUsageSimple(usageProfileEventExceedsMaxValue)
+    ).toThrow(/event timestamp exceed the maximum timestamp 1439/);
+  });
+
   it('should calculate correctly for a simple usage profile with initial state = "on"', () => {
     const usageProfile1 = {
       initial: 'on',
