@@ -61,3 +61,5 @@ Missing `events` could be handled two ways:
 - We could throw an error, as it does not match the API contract.
 
 I decided to choose the latter. The appliance might have been turned on and off during the day but a sneaky bug was introduced in the appliance, and events are no longer sent. It is then better to handle the error and log it (along with a possible appliance ID, model or any relevant information).
+
+After implementing the previous checks I realised that it might be a good thing to check for the absence of both of them. If both are missing we potentially have two bugs on our hands, and just one of them logged.

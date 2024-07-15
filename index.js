@@ -37,12 +37,18 @@ const MAX_IN_PERIOD = 1440;
  */
 
 const PROFILE_ERRORS = {
+  MISSING_INITIAL_STATE_AND_EVENTS:
+    'profile is missing initial state and events',
   MISSING_INITIAL_STATE: 'profile is missing initial state',
   MISSING_EVENTS: 'profile is missing events',
 };
 
-const calculateEnergyUsageSimple = (profile) => {
+const checkProfile = (profile) => {
   const { initial, events } = profile;
+
+  if (!initial && !events) {
+    throw new Error(PROFILE_ERRORS.MISSING_INITIAL_STATE_AND_EVENTS);
+  }
 
   if (!initial) {
     throw new Error(PROFILE_ERRORS.MISSING_INITIAL_STATE);
@@ -51,6 +57,10 @@ const calculateEnergyUsageSimple = (profile) => {
   if (!events) {
     throw new Error(PROFILE_ERRORS.MISSING_EVENTS);
   }
+};
+
+const calculateEnergyUsageSimple = (profile) => {
+  checkProfile(profile);
 };
 
 /**

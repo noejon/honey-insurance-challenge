@@ -7,6 +7,12 @@ const {
 
 // Part 1
 describe('calculateEnergyUsageSimple', () => {
+  it('should throw an error if both the initial state and events are missing from the profile', () => {
+    const emptyUsageProfile = {};
+    expect(() => calculateEnergyUsageSimple(emptyUsageProfile)).toThrow(
+      /profile is missing initial state and events/
+    );
+  });
   it('should throw an error if the initial state is missing from the profile', () => {
     const usageProfileNoInitial = {
       events: [
