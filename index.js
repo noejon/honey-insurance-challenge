@@ -40,6 +40,9 @@ const MIN_IN_PERIOD = 0;
 const ON_STATE = 'on';
 const OFF_STATE = 'off';
 
+const BASE_ON_OFF_ERROR = 'state is neither on nor off';
+const BASE_ON_OFF_AUTO_ERROR = 'state should be one of on, off or auto-off';
+
 const PROFILE_ERRORS = {
   MISSING_INITIAL_STATE_AND_EVENTS:
     'profile is missing initial state and events',
@@ -47,19 +50,16 @@ const PROFILE_ERRORS = {
   MISSING_EVENTS: 'profile is missing events',
 };
 
-const INITIAL_STATE_ON_OFF_ERROR = 'initial state is neither on nor off';
-
 const EVENTS_ERRORS = {
-  STATE_ON_OFF_ERROR: 'event state is neither on nor off',
   NOT_AN_INTEGER_TIMESTAMP: 'event timestamp is not an integer',
   NEGATIVE_TIMESTAMP: 'event timestamp cannot be less than 0',
   EXCEEDING_TIMESTAMP: 'event timestamp exceed the maximum timestamp 1439',
 };
 
-const checkEvents = (events) => {
+const checkEvents = (events, { validStates, errorMessage }) => {
   for (let i = 0; i < events.length; i++) {
-    if (![ON_STATE, OFF_STATE].includes(events[i].state)) {
-      throw new Error(EVENTS_ERRORS.STATE_ON_OFF_ERROR);
+    if (!validStates.includes(events[i].state)) {
+      throw new Error('event ' + errorMessage);
     }
     if (!isInteger(events[i].timestamp)) {
       throw new Error(EVENTS_ERRORS.NOT_AN_INTEGER_TIMESTAMP);
@@ -73,7 +73,7 @@ const checkEvents = (events) => {
   }
 };
 
-const checkProfile = (profile) => {
+const checkProfile = (profile, { validStates, errorMessage }) => {
   const { initial, events } = profile;
 
   if (!initial && !events) {
@@ -87,14 +87,17 @@ const checkProfile = (profile) => {
   if (!events) {
     throw new Error(PROFILE_ERRORS.MISSING_EVENTS);
   }
-  if (![ON_STATE, OFF_STATE].includes(initial)) {
-    throw new Error(INITIAL_STATE_ON_OFF_ERROR);
+  if (!validStates.includes(initial)) {
+    throw new Error('initial ' + errorMessage);
   }
-  checkEvents(events);
+  checkEvents(events, { validStates, errorMessage });
 };
 
 const calculateEnergyUsageSimple = (profile) => {
-  checkProfile(profile);
+  checkProfile(profile, {
+    validStates: [ON_STATE, OFF_STATE],
+    errorMessage: BASE_ON_OFF_ERROR
+  });
 
   const { initial, events } = profile;
 
@@ -154,7 +157,9 @@ const calculateEnergyUsageSimple = (profile) => {
  * and not manual intervention.
  */
 
-const calculateEnergySavings = (profile) => {};
+const calculateEnergySavings = (profile) => {
+
+};
 
 /**
  * PART 3
@@ -184,7 +189,7 @@ const calculateEnergySavings = (profile) => {};
 
 const isInteger = (number) => Number.isInteger(number);
 
-const calculateEnergyUsageForDay = (monthUsageProfile, day) => {};
+const calculateEnergyUsageForDay = (monthUsageProfile, day) => { };
 
 module.exports = {
   calculateEnergyUsageSimple,

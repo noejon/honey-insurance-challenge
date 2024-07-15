@@ -73,3 +73,7 @@ More potential edge cases to check:
 Events might not be ordered by their timestamps, so to make sure that the timestamps are ordered, they need to be sorted.
 
 I did not use the imported constant MAX_IN_PERIOD in my tests. The reason being, at any time someone could change it to 1444 and the tests would still all pass while a bug has been introduced.
+
+### Part 2
+
+The error checks are pretty similar to part 1 except for the addition of auto-off. Rather than creating a new function to check the profile, the current function is refactored.
