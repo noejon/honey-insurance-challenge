@@ -219,7 +219,93 @@ const calculateEnergySavings = (profile) => {
 
 const isInteger = (number) => Number.isInteger(number);
 
-const calculateEnergyUsageForDay = (monthUsageProfile, day) => {};
+const LAST_DAY_OF_MONTHS = [
+  31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365,
+];
+
+const DAY_ERRORS = {
+  MUST_BE_AN_INTEGER: 'must be an integer',
+  OUT_OF_RANGE: 'day out of range',
+};
+
+const getMonthFromDayInYear = (dayInYear) => {
+  // Technically here we could check for the day range also.
+  for (let i = 0; i < LAST_DAY_OF_MONTHS.length; i++) {
+    if (dayInYear <= LAST_DAY_OF_MONTHS[i]) {
+      return i;
+    }
+  }
+};
+
+const getDayInMonthFromDayInYear = (dayInYear) => {
+  const monthIndex = getMonthFromDayInYear(dayInYear);
+  return monthIndex === 0
+    ? dayInYear
+    : dayInYear - LAST_DAY_OF_MONTHS[monthIndex - 1];
+};
+
+const checkDay = (day) => {
+  if (!isInteger(day)) {
+    throw new Error(DAY_ERRORS.MUST_BE_AN_INTEGER);
+  }
+  if (day < 1 || day > 365) {
+    throw new Error(DAY_ERRORS.OUT_OF_RANGE);
+  }
+};
+
+const calculateEnergyUsageForDay = (monthUsageProfile, day) => {
+  checkDay(day);
+  const dayInMonth = getDayInMonthFromDayInYear(day);
+
+  const { events, initial } = monthUsageProfile;
+
+  events.sort((a, b) => a.timestamp - b.timestamp);
+
+  const startOfDay = (dayInMonth - 1) * MAX_IN_PERIOD;
+  const firstEventOfCurrentDayIndex = events.findIndex(
+    ({ timestamp }) => timestamp >= startOfDay
+  );
+
+  const startOfNextDay = dayInMonth * MAX_IN_PERIOD;
+  const firstEventAfterCurrentDayIndex = events.findIndex(
+    ({ timestamp }) => timestamp >= startOfNextDay
+  );
+
+  const lastEventBeforeCurrentDayIndex = events.findLastIndex(
+    ({ timestamp }) => timestamp < startOfDay
+  );
+
+  let slicedEvents = [];
+  if (firstEventOfCurrentDayIndex !== -1) {
+    // if we sliced using -1 as second argument we'd remove a valid entry from the sliced events
+    if (firstEventAfterCurrentDayIndex === -1) {
+      slicedEvents = events.slice(firstEventOfCurrentDayIndex);
+    } else {
+      slicedEvents = events.slice(
+        firstEventOfCurrentDayIndex,
+        firstEventAfterCurrentDayIndex
+      );
+    }
+  }
+
+  const dayEvents = slicedEvents.map(({ timestamp, state }) => ({
+    state,
+    timestamp: timestamp - startOfDay,
+  }));
+
+  let dayInitialState = initial;
+
+  if (lastEventBeforeCurrentDayIndex !== -1) {
+    dayInitialState = events[lastEventBeforeCurrentDayIndex].state;
+  }
+
+  const dayProfile = {
+    initial: dayInitialState,
+    events: dayEvents,
+  };
+
+  return calculateEnergyUsageSimple(dayProfile);
+};
 
 module.exports = {
   calculateEnergyUsageSimple,

@@ -79,3 +79,31 @@ I did not use the imported constant MAX_IN_PERIOD in my tests. The reason being,
 The error checks are pretty similar to part 1 except for the addition of auto-off. Rather than creating a new function to check the profile, the current function is refactored.
 
 ### Part 3
+
+In part 3, in the interest of time I did not implement any checks on the validity of the monthlyUsageProfile. This one is also a bit more involved than with days, as we'd need to consider the day when performing our check. The value `43199` (30 days) will be valid for all months but February. Although that should not stop us from calculating, it raises a concern further on. If we receive a monthlyUsageProfile that matches 31 days and a day in February, it does not add up and we'd need to log this error for visibility.
+
+The logic for this function is a bit more involved so here are the steps I took:
+
+- Check if day is an integer ✅
+- Check if day is out of range ✅
+- Given a day of the year, get the day of the month for that day ✅
+- Sort the events ✅
+- To calculate the slice ✅
+  - Find the first event index of the day ✅
+  - Find the first event index after the day ✅
+- Find the last event index before the day to calculate the initial ✅
+- Generate the days event by subtracting timestamps ✅
+- Generate a single day profile object ✅
+- Call calculateEnergyUsageSimple with the single day profile object  ✅
+
+I also added a unit test to check a date in February.
+
+## Notes
+
+It took me a little bit more than 2 hours to complete the 3 parts.
+
+There are a few things that could be improved:
+
+- Currently everything is in the one index.js file. I would probably restructure things a little bit, with utils and constants files, as well as separating each function to its own file
+- Some further checks could be done on the `calculateEnergyUsageForDay` monthlyProfile.
+- This is out of scope as per the part 3 description, but it would be nice to handle leap years.

@@ -2,7 +2,6 @@ const {
   calculateEnergyUsageSimple,
   calculateEnergySavings,
   calculateEnergyUsageForDay,
-  MAX_IN_PERIOD,
 } = require('./index');
 
 // Part 1
@@ -327,7 +326,7 @@ describe('calculateEnergySavings', () => {
       initial: 'auto-off',
       events: [],
     };
-    expect(calculateEnergySavings(usageProfile)).toEqual(MAX_IN_PERIOD);
+    expect(calculateEnergySavings(usageProfile)).toEqual(1440);
   });
 
   it('should calculate energy savings correctly on sensible data', () => {
@@ -345,7 +344,7 @@ describe('calculateEnergySavings', () => {
       ],
     };
     expect(calculateEnergySavings(usageProfile)).toEqual(
-      933 - 500 + (MAX_IN_PERIOD - 1320)
+      933 - 500 + (1440 - 1320)
     );
   });
 
@@ -366,7 +365,7 @@ describe('calculateEnergySavings', () => {
       ],
     };
     expect(calculateEnergySavings(usageProfile)).toEqual(
-      933 - 500 + (MAX_IN_PERIOD - 1320)
+      933 - 500 + (1440 - 1320)
     );
   });
 
@@ -380,7 +379,7 @@ describe('calculateEnergySavings', () => {
         { state: 'off', timestamp: 500 },
       ],
     };
-    expect(calculateEnergySavings(usageProfile)).toEqual(MAX_IN_PERIOD - 320);
+    expect(calculateEnergySavings(usageProfile)).toEqual(1440 - 320);
   });
 
   it('should calculate energy savings correctly on silly data where the events are not ordered by timestamp', () => {
@@ -393,7 +392,7 @@ describe('calculateEnergySavings', () => {
         { state: 'on', timestamp: 250 },
       ],
     };
-    expect(calculateEnergySavings(usageProfile)).toEqual(MAX_IN_PERIOD - 320);
+    expect(calculateEnergySavings(usageProfile)).toEqual(1440 - 320);
   });
 });
 
@@ -451,19 +450,39 @@ describe('calculateEnergyUsageForDay', () => {
   });
 
   it('should calculate day 5 correctly', () => {
-    expect(calculateEnergyUsageForDay(monthProfile, 5)).toEqual(MAX_IN_PERIOD);
+    expect(calculateEnergyUsageForDay(monthProfile, 5)).toEqual(1440);
   });
 
-  it('should calculate day 2 correctly when the first event starts on day 4', () => {
-    const monthProfile1 = {
+  describe('when the first and only event starts on day 4', () => {
+    it('should calculate day 2 correctly', () => {
+      const monthProfile1 = {
+        initial: 'off',
+        events: [{ timestamp: 4500, state: 'on' }],
+      };
+      expect(calculateEnergyUsageForDay(monthProfile1, 2)).toEqual(0);
+    });
+    it('should calculate day 4 correctly', () => {
+      const monthProfile1 = {
+        initial: 'off',
+        events: [{ timestamp: 4500, state: 'on' }],
+      };
+      expect(calculateEnergyUsageForDay(monthProfile1, 4)).toEqual(1260);
+    });
+    it('should calculate day 5 correctly', () => {
+      const monthProfile1 = {
+        initial: 'off',
+        events: [{ timestamp: 4500, state: 'on' }],
+      };
+      expect(calculateEnergyUsageForDay(monthProfile1, 15)).toEqual(1440);
+    });
+  });
+
+  it('should calculate day 42 correctly', () => {
+    const monthProfile2 = {
       initial: 'off',
-      events: [{ timestamp: 4500, state: 'on' }],
+      events: [{ timestamp: 14442, state: 'on' }],
     };
-    expect(calculateEnergyUsageForDay(monthProfile1, 2)).toEqual(0);
-    expect(calculateEnergyUsageForDay(monthProfile1, 4)).toEqual(1260);
-    expect(calculateEnergyUsageForDay(monthProfile1, 15)).toEqual(
-      MAX_IN_PERIOD
-    );
+    expect(calculateEnergyUsageForDay(monthProfile2, 42)).toEqual(1440 - 42);
   });
 
   it('should throw an error on an out of range day number', () => {
