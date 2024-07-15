@@ -45,13 +45,11 @@ npm run test:watch
 2. Raise a PR in this repository with your solution.
 3. Send us an email, and we'll set up a time and go through your answers, either over a video-call or in-person.
 
-## Decisions and implementation
+## Decisions
 
 ### Part 1
 
-#### Decisions
-
-##### Checks on the profile object
+#### Checks on the profile object
 
 As we are using Vanilla JS, the profile object might be missing the `initial` or `events` properties. If initial is missing, an error should be thrown. We can't assume what the `initial` value was according to the first event, as there is a possibility to have consecutive duplicate "on" or "off" states.
 
@@ -73,3 +71,5 @@ More potential edge cases to check:
 - Timestamp is more than 1439
 
 Events might not be ordered by their timestamps, so to make sure that the timestamps are ordered, they need to be sorted.
+
+I did not use the imported constant MAX_IN_PERIOD in my tests. The reason being, at any time someone could change it to 1444 and the tests would still all pass while a bug has been introduced.
