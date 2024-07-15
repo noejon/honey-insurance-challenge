@@ -7,6 +7,26 @@ const {
 
 // Part 1
 describe('calculateEnergyUsageSimple', () => {
+  it('should throw an error if the initial state is missing from the profile', () => {
+    const usageProfileNoInitial = {
+      events: [
+        { timestamp: 126, state: 'off' },
+        { timestamp: 833, state: 'on' },
+      ],
+    };
+    expect(() => calculateEnergyUsageSimple(usageProfileNoInitial)).toThrow(
+      /profile is missing initial state/
+    );
+  });
+
+  it('should throw an error if events is missing from the profile', () => {
+    const usageProfileNoEvents = {
+      initial: 'on',
+    };
+    expect(() => calculateEnergyUsageSimple(usageProfileNoEvents)).toThrow(
+      /profile is missing events/
+    );
+  });
   it('should calculate correctly for a simple usage profile with initial state = "on"', () => {
     const usageProfile1 = {
       initial: 'on',
