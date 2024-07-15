@@ -1,6 +1,7 @@
 /* The maximum number of minutes in a period (a day) */
 
 const MAX_IN_PERIOD = 1440;
+const MIN_IN_PERIOD = 0;
 
 /**
  * PART 1
@@ -94,6 +95,31 @@ const checkProfile = (profile) => {
 
 const calculateEnergyUsageSimple = (profile) => {
   checkProfile(profile);
+
+  const { initial, events } = profile;
+
+  events.sort((a, b) => a.timestamp - b.timestamp);
+
+  let currentEvent = { timestamp: MIN_IN_PERIOD, state: initial };
+  let totalTimeOn = MIN_IN_PERIOD;
+
+  for (let i = 0; i < events.length; i++) {
+    // Handling the case where there are several duplicate state following each other
+    // We just ignore the current event
+    if (currentEvent.state === events[i].state) {
+      continue;
+    }
+    if (currentEvent.state === ON_STATE) {
+      totalTimeOn += events[i].timestamp - currentEvent.timestamp;
+    }
+    currentEvent = events[i];
+  }
+  // If the last event is on, we need to add it to the time on
+  if (currentEvent.state === ON_STATE) {
+    totalTimeOn += MAX_IN_PERIOD - currentEvent.timestamp;
+  }
+
+  return totalTimeOn;
 };
 
 /**

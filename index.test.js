@@ -112,6 +112,19 @@ describe('calculateEnergyUsageSimple', () => {
     );
   });
 
+  it('should calculate correctly for a simple usage profile with initial state = "on" where the events are not ordered by timestamp', () => {
+    const usageProfile1 = {
+      initial: 'on',
+      events: [
+        { timestamp: 833, state: 'on' },
+        { timestamp: 126, state: 'off' },
+      ],
+    };
+    expect(calculateEnergyUsageSimple(usageProfile1)).toEqual(
+      126 + (1440 - 833)
+    );
+  });
+
   it('should calculate correctly for a simple usage profile with initial state = "off"', () => {
     const usageProfile2 = {
       initial: 'off',
@@ -128,11 +141,19 @@ describe('calculateEnergyUsageSimple', () => {
   });
 
   it('should calculate correctly when the appliance is on the whole time', () => {
-    const usageProfile3 = {
+    const usageProfileOnAllDay = {
       initial: 'on',
       events: [],
     };
-    expect(calculateEnergyUsageSimple(usageProfile3)).toEqual(1440);
+    expect(calculateEnergyUsageSimple(usageProfileOnAllDay)).toEqual(1440);
+  });
+
+  it('should calculate correctly when the appliance is off the whole time', () => {
+    const usageProfileOffAllDay = {
+      initial: 'off',
+      events: [],
+    };
+    expect(calculateEnergyUsageSimple(usageProfileOffAllDay)).toEqual(0);
   });
 
   it('should handle duplicate on events', () => {
@@ -163,6 +184,31 @@ describe('calculateEnergyUsageSimple', () => {
     expect(calculateEnergyUsageSimple(usageProfile)).toEqual(
       80 - 0 + (1440 - 656)
     );
+  });
+
+  it('should handle duplicate on events where one of them is the initial on event', () => {
+    const usageProfile = {
+      initial: 'on',
+      events: [
+        { timestamp: 30, state: 'on' },
+        { timestamp: 80, state: 'off' },
+        { timestamp: 656, state: 'on' },
+      ],
+    };
+    expect(calculateEnergyUsageSimple(usageProfile)).toEqual(
+      80 - 0 + (1440 - 656)
+    );
+  });
+
+  it('should handle duplicate off events where one of them is the initial off event', () => {
+    const usageProfile = {
+      initial: 'off',
+      events: [
+        { timestamp: 30, state: 'off' },
+        { timestamp: 80, state: 'on' },
+      ],
+    };
+    expect(calculateEnergyUsageSimple(usageProfile)).toEqual(1440 - 80);
   });
 });
 

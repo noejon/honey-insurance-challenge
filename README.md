@@ -71,3 +71,5 @@ More potential edge cases to check:
 - Timestamp is not an integer
 - Timestamp is negative
 - Timestamp is more than 1439
+
+Events might not be ordered by their timestamps, so to make sure that the timestamps are ordered, they need to be sorted.
