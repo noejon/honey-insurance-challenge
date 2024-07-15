@@ -36,7 +36,22 @@ const MAX_IN_PERIOD = 1440;
  * ```
  */
 
-const calculateEnergyUsageSimple = (profile) => {};
+const PROFILE_ERRORS = {
+  MISSING_INITIAL_STATE: 'profile is missing initial state',
+  MISSING_EVENTS: 'profile is missing events',
+};
+
+const calculateEnergyUsageSimple = (profile) => {
+  const { initial, events } = profile;
+
+  if (!initial) {
+    throw new Error(PROFILE_ERRORS.MISSING_INITIAL_STATE);
+  }
+
+  if (!events) {
+    throw new Error(PROFILE_ERRORS.MISSING_EVENTS);
+  }
+};
 
 /**
  * PART 2
