@@ -107,3 +107,38 @@ There are a few things that could be improved:
 - Currently everything is in the one index.js file. I would probably restructure things a little bit, with utils and constants files, as well as separating each function to its own file
 - Some further checks could be done on the `calculateEnergyUsageForDay` monthlyProfile.
 - This is out of scope as per the part 3 description, but it would be nice to handle leap years.
+
+## Round 2 - System Design
+
+The system design task was something about generating events in an event-bridge.
+
+The known information was that there was 2 endpoints provided by a third party:
+
+`/v1/claims`: retrieves all the claims that have seen some changes since a date given as param to the input.
+
+`/v1/claims/{id}` that provides the information about a claim.
+
+Some more information:
+
+- There is only one API key
+- The API key is used by many different services
+- There is a rate limit of 100 requests per 10 seconds
+
+Questions:
+
+- We need to generate events on a regular time interval checking if there have been changes
+- What is the content of the events
+- How do we make sure that no events are lost?
+- We need to create an event when the a claim has been modified, saving the difference in a DB
+- Given some other services that we own can make a changes to claims, we could run into an infinite loop. How might that happen and how would you prevent it?
+
+How do I feel about the interview:
+
+- Having not done any real backend for more than 4 years I was quite rusty. It also seems that I misunderstood what AWS event bridge was. It is the evolution of Cloudwatch, rather than an equivalent to Apache Kafka (which is what I portrayed it to be).
+- Should have made use of Queues instead and I did not, when mentioning that one lambda (getting all the claims) was decoupled from the other (gathering the diff)
+- When asked about how to not loose events because of the rate-limiter, I mentioned that we could save a state somewhere in a DB. Just chose dynamoDB. Given the fact that there are many reads and many writes, reading from a DB is quite slow. Here I think we could leverage something like redis session state.
+
+The last negative point was that I was too focused on the task rather than listening at the cues from both interviewers. Although I knew they put a junior person to interview me to check at my ability to explain well to them, I forgot all about it when actually being stressed out on the task.
+Some cues such as the senior interviewer asking her if she understood should have prompted me to do the same.
+
+A takeaway from this is that I need to work on myself to convert this "bad" stress into "good" stress. And be more aware of the cues that are given to me.
